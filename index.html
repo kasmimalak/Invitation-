@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>زفاف أنس و ملاك</title>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700&family=Lateef:wght@300;400&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --env-bg:   #f0ebe2;
+  --env-fold: #e4ddd2;
+  --env-dark: #d6cec3;
+  --gold:     #c9a84c;
+  --gold-l:   #e2c97e;
+  --gold-d:   #a07830;
+  --green:    #4a1628;
+  --green2:   #3d1220;
+  --green3:   #2d0a14;
+  --cream:    #fdf8ee;
+  --text-g:   rgba(201,168,76,0.85);
+}
+
+html,body{height:100%;overflow:hidden;}
+body{font-family:'Cormorant Garamond',serif;}
+
+/* ══════════════════════
+   PAGE 1 — ENVELOPE
+══════════════════════ */
+#page1{
+  position:fixed;inset:0;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--env-bg);
+  z-index:10;cursor:pointer;
+  overflow:hidden;
+}
+
+/* paper texture overlay */
+#page1::before{
+  content:'';position:absolute;inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E");
+  pointer-events:none;z-index:0;opacity:.5;
+}
+
+/* fine diagonal lines like laid paper */
+#page1::after{
+  content:'';position:absolute;inset:0;
+  background-image:repeating-linear-gradient(
+    100deg,
+    transparent,transparent 3px,
+    rgba(180,170,155,.07) 3px,rgba(180,170,155,.07) 4px
+  );
+  pointer-events:none;z-index:0;
+}
+
+/* ── ENVELOPE SHAPE (full screen) ── */
+.env-full{
+  position:absolute;inset:0;
+  z-index:1;
+  transform-style:preserve-3d;
+}
+
+/* left fold triangle */
+.env-fold-l{
+  position:absolute;
+  top:0;left:0;bottom:0;
+  width:0;height:0;
+  border-style:solid;
+  border-color:transparent;
+  border-left-color:var(--env-fold);
+  border-width:50vh 0 50vh 50vw;
+  filter:drop-shadow(2px 0 4px rgba(0,0,0,.06));
+}
+/* right fold triangle */
+.env-fold-r{
+  position:absolute;
+  top:0;right:0;bottom:0;
+  width:0;height:0;
+  border-style:solid;
+  border-color:transparent;
+  border-right-color:var(--env-fold);
+  border-width:50vh 50vw 50vh 0;
+  filter:drop-shadow(-2px 0 4px rgba(0,0,0,.06));
+}
+/* bottom fold triangle */
+.env-fold-b{
+  position:absolute;
+  bottom:0;left:0;right:0;
+  height:0;width:0;
+  border-style:solid;
+  border-color:transparent;
+  border-bottom-color:var(--env-dark);
+  border-width:0 50vw 50vh 50vw;
+  filter:drop-shadow(0 -2px 4px rgba(0,0,0,.07));
+}
+
+/* top flap — the one that opens */
+.env-flap-wrap{
+  position:absolute;
+  top:0;left:0;right:0;height:50vh;
+  transform-origin:top center;
+  transform-style:preserve-3d;
+  z-index:20;
+  transition:transform .9s cubic-bezier(.4,0,.15,1);
+}
+.env-flap-front{
+  position:absolute;inset:0;
+  clip-path:polygon(0 0,100% 0,50% 100%);
+  background:var(--env-fold);
+  filter:drop-shadow(0 4px 8px rgba(0,0,0,.1));
+  backface-visibility:hidden;
+}
+/* subtle crease line on flap */
+.env-flap-front::after{
+  content:'';position:absolute;
+  left:0;right:0;bottom:0;
+  height:1px;
+  background:linear-gradient(90deg,transparent 5%,rgba(180,170,155,.5) 50%,transparent 95%);
+}
+.env-flap-back{
+  position:absolute;inset:0;
+  clip-path:polygon(0 0,100% 0,50% 100%);
+  background:var(--env-dark);
+  transform:rotateX(180deg);
+  backface-visibility:hidden;
+}
+
+/* open state */
+.env-full.open .env-flap-wrap{ transform:rotateX(-180deg); }
+.env-full.open .seal-wrap{
+  transform:translate(-50%,-50%) scale(0) rotate(10deg);
+  opacity:0;
+}
+
+/* ── WAX SEAL ── */
+.seal-wrap{
+  position:absolute;
+  top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  z-index:30;
+  transition:transform .4s ease, opacity .3s ease;
+}
+
+/* "انقر هنا" text above seal */
+.seal-hint{
+  position:absolute;
+  top:50%;left:50%;
+  transform:translate(-50%,-230%);
+  z-index:31;
+  font-family:'Amiri',serif;
+  font-size:clamp(13px,2.8vw,18px);
+  color:var(--gold);
+  letter-spacing:3px;
+  white-space:nowrap;
+  pointer-events:none;
+  animation:pulseGold 2.5s ease-in-out infinite;
+}
+
+@keyframes pulseGold{0%,100%{opacity:.5}50%{opacity:1}}
+
+/* SVG SEAL */
+.seal-svg{
+  width:clamp(90px,16vw,130px);
+  height:clamp(90px,16vw,130px);
+  filter:drop-shadow(0 6px 18px rgba(0,0,0,.22));
+  transition:transform .3s ease;
+}
+#page1:hover .seal-svg{ transform:scale(1.05); }
+
+/* ══════════════════════
+   PAGE 2 — CONTENT
+══════════════════════ */
+#page2{
+  position:fixed;inset:0;overflow-y:auto;
+  opacity:0;pointer-events:none;z-index:5;
+  background-color:#2d0a14;
+  transition:opacity .9s ease .15s;
+}
+#page2.visible{opacity:1;pointer-events:all;}
+#page2::before{
+  content:'';position:fixed;inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Cdefs%3E%3Cpattern id='ar' x='0' y='0' width='80' height='80' patternUnits='userSpaceOnUse'%3E%3Crect width='80' height='80' fill='%232d0a14'/%3E%3Cpath d='M40 0 L80 40 L40 80 L0 40 Z' fill='none' stroke='rgba(201,168,76,0.12)' stroke-width='0.8'/%3E%3Cpath d='M40 10 L70 40 L40 70 L10 40 Z' fill='none' stroke='rgba(201,168,76,0.08)' stroke-width='0.5'/%3E%3Cpath d='M40 20 L60 40 L40 60 L20 40 Z' fill='none' stroke='rgba(201,168,76,0.06)' stroke-width='0.4'/%3E%3Ccircle cx='40' cy='40' r='3' fill='none' stroke='rgba(201,168,76,0.1)' stroke-width='0.5'/%3E%3Ccircle cx='0' cy='0' r='3' fill='none' stroke='rgba(201,168,76,0.07)' stroke-width='0.4'/%3E%3Ccircle cx='80' cy='0' r='3' fill='none' stroke='rgba(201,168,76,0.07)' stroke-width='0.4'/%3E%3Ccircle cx='0' cy='80' r='3' fill='none' stroke='rgba(201,168,76,0.07)' stroke-width='0.4'/%3E%3Ccircle cx='80' cy='80' r='3' fill='none' stroke='rgba(201,168,76,0.07)' stroke-width='0.4'/%3E%3Cpath d='M40 0 Q50 10 40 20 Q30 10 40 0' fill='none' stroke='rgba(201,168,76,0.07)' stroke-width='0.4'/%3E%3Cpath d='M40 60 Q50 70 40 80 Q30 70 40 60' fill='none' stroke='rgba(201,168,76,0.07)' stroke-width='0.4'/%3E%3Cpath d='M0 40 Q10 50 20 40 Q10 30 0 40' fill='none' stroke='rgba(201,168,76,0.07)' stroke-width='0.4'/%3E%3Cpath d='M60 40 Q70 50 80 40 Q70 30 60 40' fill='none' stroke='rgba(201,168,76,0.07)' stroke-width='0.4'/%3E%3C/pattern%3E%3C/defs%3E%3Crect width='80' height='80' fill='url(%23ar)'/%3E%3C/svg%3E");
+  background-size:80px 80px;pointer-events:none;z-index:0;
+}
+
+/* lanterns */
+.lanterns{
+  position:relative;z-index:2;
+  display:flex;justify-content:space-around;align-items:flex-start;
+  padding:0 8px;background:rgba(45,10,20,0.95);
+  border-bottom:1px solid rgba(201,168,76,.25);
+}
+.lw{display:flex;flex-direction:column;align-items:center;
+  animation:swing 4s ease-in-out infinite;transform-origin:top center;}
+.lw:nth-child(2){animation-delay:-1.3s}.lw:nth-child(3){animation-delay:-2.6s}
+.lw:nth-child(4){animation-delay:-.6s}.lw:nth-child(5){animation-delay:-2s}
+.lw:nth-child(6){animation-delay:-3.3s}.lw:nth-child(7){animation-delay:-.9s}
+.ls{width:1px;background:rgba(201,168,76,.35);}
+.lsvg{width:28px;height:44px;}
+
+/* hero */
+.hero{
+  position:relative;z-index:2;
+  min-height:100vh;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  padding:clamp(36px,8vw,60px) clamp(14px,5vw,24px) clamp(32px,7vw,50px);text-align:center;
+}
+.bismillah{
+  font-family:'Amiri',serif;
+  font-size:clamp(16px,4vw,24px);
+  color:var(--gold);margin-bottom:30px;letter-spacing:1px;
+  opacity:0;animation:aUp 1s ease forwards .3s;
+}
+.card{
+  max-width:520px;width:100%;
+  border:1px solid rgba(201,168,76,.28);
+  padding:clamp(28px,7vw,52px) clamp(18px,6vw,40px) clamp(24px,6vw,46px);position:relative;
+  background:rgba(60,12,28,.55);
+  opacity:0;animation:aUp 1.1s ease forwards .6s;
+}
+.card::before{content:'';position:absolute;top:0;left:10%;right:10%;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);}
+.card::after{content:'';position:absolute;bottom:0;left:10%;right:10%;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);}
+.co{position:absolute;width:18px;height:18px;}
+.co.tl{top:8px;left:8px;border-top:1px solid var(--gold);border-left:1px solid var(--gold);}
+.co.tr{top:8px;right:8px;border-top:1px solid var(--gold);border-right:1px solid var(--gold);}
+.co.bl{bottom:8px;left:8px;border-bottom:1px solid var(--gold);border-left:1px solid var(--gold);}
+.co.br{bottom:8px;right:8px;border-bottom:1px solid var(--gold);border-right:1px solid var(--gold);}
+.pre-text{font-style:italic;font-size:clamp(12px,2.8vw,15px);color:var(--text-g);line-height:2;margin-bottom:22px;}
+.sep{display:block;color:var(--gold-d);font-size:14px;letter-spacing:8px;margin:18px 0;opacity:.7;}
+.names-ar{font-family:'Lateef',serif;font-size:clamp(44px,14vw,82px);color:var(--gold-l);line-height:1;display:block;}
+.and{font-family:'Lateef',serif;font-size:clamp(30px,7vw,46px);color:var(--gold-d);display:block;margin:2px 0;}
+.names-fr{font-style:italic;font-size:clamp(18px,4.5vw,26px);color:var(--text-g);letter-spacing:5px;margin-top:6px;}
+.date-note{margin-top:18px;font-style:italic;font-size:clamp(12px,2.5vw,14px);color:var(--gold-d);letter-spacing:2px;line-height:2;}
+
+/* countdown */
+.cdw{position:relative;z-index:2;padding:clamp(28px,6vw,50px) clamp(14px,4vw,24px);text-align:center;
+  border-top:1px solid rgba(201,168,76,.1);border-bottom:1px solid rgba(201,168,76,.1);}
+.cdt{font-style:italic;font-size:clamp(13px,3.5vw,17px);color:var(--gold-d);letter-spacing:3px;margin-bottom:28px;}
+.cdg{display:flex;justify-content:center;gap:clamp(6px,2vw,16px);flex-wrap:wrap;}
+.cdb{text-align:center;min-width:clamp(58px,18vw,78px);border-top:1px solid rgba(201,168,76,.25);border-bottom:1px solid rgba(201,168,76,.25);padding:clamp(10px,3vw,18px) clamp(8px,2.5vw,14px) clamp(8px,2.5vw,12px);}
+.cdn{font-size:clamp(32px,9vw,48px);font-weight:300;color:var(--gold-l);line-height:1;display:block;}
+.cdl{font-size:9px;letter-spacing:3px;color:var(--gold-d);margin-top:5px;display:block;text-transform:uppercase;}
+
+/* sections */
+.sec{position:relative;z-index:2;max-width:620px;margin:0 auto;padding:clamp(32px,7vw,56px) clamp(16px,5vw,24px);}
+.stit{text-align:center;font-style:italic;font-size:clamp(16px,4vw,20px);color:var(--gold);letter-spacing:3px;margin-bottom:32px;}
+.stit::before,.stit::after{content:'—  ';color:var(--gold-d);}
+
+/* events */
+.evg{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:rgba(201,168,76,.12);}
+@media(max-width:460px){.evg{grid-template-columns:1fr;}}
+.evc{background:rgba(45,10,20,0.75);padding:clamp(20px,5vw,32px) clamp(12px,3vw,20px);text-align:center;transition:background .3s;}
+.evc:hover{background:rgba(60,12,28,0.85);}
+.eico{font-size:26px;margin-bottom:12px;display:block;}
+.ewho{font-size:9px;letter-spacing:4px;text-transform:uppercase;color:var(--gold-d);margin-bottom:10px;}
+.edn{font-family:'Lateef',serif;font-size:clamp(36px,10vw,64px);color:var(--gold-l);line-height:1;display:block;}
+.emo{font-style:italic;font-size:17px;color:var(--text-g);letter-spacing:2px;}
+.epr{margin-top:14px;font-size:14px;color:var(--text-g);line-height:2;}
+.epr span{font-style:italic;font-size:12px;color:var(--gold-d);}
+
+/* location */
+.locc{text-align:center;border:1px solid rgba(201,168,76,.18);padding:clamp(24px,5vw,40px) clamp(14px,4vw,28px);position:relative;}
+.locc::before{content:'';position:absolute;top:0;left:15%;right:15%;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);}
+.locn{font-style:italic;font-size:clamp(16px,4vw,21px);color:var(--gold-l);letter-spacing:2px;margin-bottom:8px;}
+.loca{font-style:italic;font-size:14px;color:var(--text-g);line-height:2;margin-bottom:28px;}
+.mapb{display:inline-flex;align-items:center;gap:8px;border:1px solid rgba(201,168,76,.35);color:var(--gold-l);font-style:italic;font-size:clamp(13px,3.5vw,15px);letter-spacing:1px;padding:clamp(10px,2.5vw,12px) clamp(16px,5vw,32px);text-decoration:none;transition:background .3s,border-color .3s;word-break:keep-all;}
+.mapb:hover{background:rgba(201,168,76,.07);border-color:var(--gold-l);}
+
+/* footer */
+.foot{position:relative;z-index:2;text-align:center;padding:clamp(36px,7vw,56px) clamp(16px,5vw,24px) clamp(48px,9vw,72px);border-top:1px solid rgba(201,168,76,.1);}
+.fdua{font-family:'Amiri',serif;font-size:clamp(14px,4vw,21px);color:var(--text-g);line-height:2.2;margin-bottom:10px;padding:0 8px;}
+.ffr{font-style:italic;font-size:13px;color:var(--gold-d);letter-spacing:1px;}
+.fsig{margin-top:28px;font-size:10px;letter-spacing:5px;color:var(--gold-d);text-transform:uppercase;opacity:.45;}
+
+.fade{opacity:0;}
+@keyframes aUp{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}
+@keyframes swing{0%,100%{transform:rotate(-5deg)}50%{transform:rotate(5deg)}}
+
+@media(max-width:380px){
+  .cdg{gap:4px;}
+  .cdb{min-width:52px;padding:8px 6px;}
+  .cdn{font-size:28px;}
+  .card{padding:20px 14px 20px;}
+  .names-ar{font-size:42px;}
+}
+</style>
+</head>
+<body>
+
+<!-- ══ PAGE 1 ══ -->
+<div id="page1" onclick="openEnv()">
+
+  <div class="env-full" id="env">
+    <!-- side folds -->
+    <div class="env-fold-l"></div>
+    <div class="env-fold-r"></div>
+    <!-- bottom fold -->
+    <div class="env-fold-b"></div>
+    <!-- top flap -->
+    <div class="env-flap-wrap">
+      <div class="env-flap-front"></div>
+      <div class="env-flap-back"></div>
+    </div>
+  </div>
+
+  <!-- hint text above seal -->
+  <div class="seal-hint">انقر هنا</div>
+
+  <!-- WAX SEAL — centered -->
+  <div class="seal-wrap">
+    <svg class="seal-svg" viewBox="0 0 140 140" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="waxG" cx="42%" cy="35%" r="60%">
+          <stop offset="0%"   stop-color="#e2c060"/>
+          <stop offset="35%"  stop-color="#c9a84c"/>
+          <stop offset="70%"  stop-color="#a07830"/>
+          <stop offset="100%" stop-color="#8a6020"/>
+        </radialGradient>
+        <radialGradient id="waxEdge" cx="50%" cy="50%" r="50%">
+          <stop offset="75%"  stop-color="transparent"/>
+          <stop offset="100%" stop-color="rgba(100,70,10,.3)"/>
+        </radialGradient>
+      </defs>
+
+      <!-- wax blob — irregular organic shape -->
+      <path d="
+        M70 8
+        C85 6, 100 12, 112 22
+        C126 34, 134 50, 133 66
+        C132 82, 126 97, 116 108
+        C104 121, 87 130, 70 130
+        C53 130, 36 122, 25 110
+        C13 97, 6 80, 7 63
+        C8 46, 16 30, 28 19
+        C40 8, 55 10, 70 8Z
+      " fill="url(#waxG)"/>
+      <!-- edge shadow -->
+      <path d="
+        M70 8
+        C85 6, 100 12, 112 22
+        C126 34, 134 50, 133 66
+        C132 82, 126 97, 116 108
+        C104 121, 87 130, 70 130
+        C53 130, 36 122, 25 110
+        C13 97, 6 80, 7 63
+        C8 46, 16 30, 28 19
+        C40 8, 55 10, 70 8Z
+      " fill="url(#waxEdge)"/>
+      <!-- highlight -->
+      <ellipse cx="54" cy="44" rx="18" ry="11" fill="rgba(255,245,180,.22)" transform="rotate(-20,54,44)"/>
+
+      <!-- outer engraved ring -->
+      <circle cx="70" cy="70" r="50" fill="none" stroke="rgba(255,240,160,.4)" stroke-width="1.2"/>
+      <!-- inner ring -->
+      <circle cx="70" cy="70" r="43" fill="none" stroke="rgba(255,240,160,.25)" stroke-width=".8"/>
+
+      <!-- FLOWER MOTIF (peony/rose style) -->
+      <g transform="translate(70,70)" fill="none" stroke="rgba(255,240,150,.65)" stroke-width="1">
+        <!-- petals outer ring -->
+        <ellipse cx="0" cy="-22" rx="6" ry="10" transform="rotate(0)"/>
+        <ellipse cx="0" cy="-22" rx="6" ry="10" transform="rotate(45)"/>
+        <ellipse cx="0" cy="-22" rx="6" ry="10" transform="rotate(90)"/>
+        <ellipse cx="0" cy="-22" rx="6" ry="10" transform="rotate(135)"/>
+        <ellipse cx="0" cy="-22" rx="6" ry="10" transform="rotate(180)"/>
+        <ellipse cx="0" cy="-22" rx="6" ry="10" transform="rotate(225)"/>
+        <ellipse cx="0" cy="-22" rx="6" ry="10" transform="rotate(270)"/>
+        <ellipse cx="0" cy="-22" rx="6" ry="10" transform="rotate(315)"/>
+        <!-- petals inner ring -->
+        <ellipse cx="0" cy="-13" rx="4" ry="7" transform="rotate(22.5)"/>
+        <ellipse cx="0" cy="-13" rx="4" ry="7" transform="rotate(67.5)"/>
+        <ellipse cx="0" cy="-13" rx="4" ry="7" transform="rotate(112.5)"/>
+        <ellipse cx="0" cy="-13" rx="4" ry="7" transform="rotate(157.5)"/>
+        <ellipse cx="0" cy="-13" rx="4" ry="7" transform="rotate(202.5)"/>
+        <ellipse cx="0" cy="-13" rx="4" ry="7" transform="rotate(247.5)"/>
+        <ellipse cx="0" cy="-13" rx="4" ry="7" transform="rotate(292.5)"/>
+        <ellipse cx="0" cy="-13" rx="4" ry="7" transform="rotate(337.5)"/>
+        <!-- center -->
+        <circle cx="0" cy="0" r="7" fill="rgba(255,240,150,.12)" stroke="rgba(255,240,150,.65)" stroke-width=".8"/>
+        <circle cx="0" cy="0" r="3.5" fill="rgba(255,240,150,.3)"/>
+      </g>
+    </svg>
+  </div>
+
+</div>
+
+
+<!-- ══ PAGE 2 ══ -->
+<div id="page2">
+
+  <div class="lanterns">
+    <div class="lw"><div class="ls" style="height:52px"></div>
+      <svg class="lsvg" viewBox="0 0 36 52"><rect x="11" y="0" width="14" height="7" rx="2" fill="rgba(201,168,76,.55)"/><path d="M7 9Q5 29 7 43Q18 49 29 43Q31 29 29 9Z" fill="#3d1220"/><path d="M7 9Q5 29 7 43Q18 49 29 43Q31 29 29 9Z" fill="none" stroke="rgba(201,168,76,.28)" stroke-width=".8"/><line x1="7" y1="18" x2="29" y2="18" stroke="rgba(201,168,76,.18)" stroke-width=".7"/><line x1="6" y1="27" x2="30" y2="27" stroke="rgba(201,168,76,.18)" stroke-width=".7"/><line x1="7" y1="36" x2="29" y2="36" stroke="rgba(201,168,76,.18)" stroke-width=".7"/><ellipse cx="18" cy="43" rx="5" ry="4" fill="#2d0a14" stroke="rgba(201,168,76,.25)" stroke-width=".6"/><line x1="14" y1="47" x2="13" y2="52" stroke="rgba(201,168,76,.3)" stroke-width=".8"/><line x1="18" y1="47" x2="18" y2="52" stroke="rgba(201,168,76,.3)" stroke-width=".8"/><line x1="22" y1="47" x2="23" y2="52" stroke="rgba(201,168,76,.3)" stroke-width=".8"/></svg>
+    </div>
+    <div class="lw"><div class="ls" style="height:70px"></div>
+      <svg class="lsvg" viewBox="0 0 36 52"><rect x="11" y="0" width="14" height="7" rx="2" fill="rgba(201,168,76,.55)"/><path d="M7 9Q5 29 7 43Q18 49 29 43Q31 29 29 9Z" fill="#3d1220"/><path d="M7 9Q5 29 7 43Q18 49 29 43Q31 29 29 9Z" fill="none" stroke="rgba(201,168,76,.28)" stroke-width=".8"/><line x1="7" y1="18" x2="29" y2="18" stroke="rgba(201,168,76,.18)" stroke-width=".7"/><line x1="6" y1="27" x2="30" y2="27" stroke="rgba(201,168,76,.18)" stroke-width=".7"/><line x1="7" y1="36" x2="29" y2="36" stroke="rgba(201,168,76,.18)" stroke-width=".7"/><ellipse cx="18" cy="43" rx="5" ry="4" fill="#2d0a14" stroke="rgba(201,168,76,.25)" stroke-width=".6"/><line x1="14" y1="47" x2="13" y2="52" stroke="rgba(201,168,76,.3)" stroke-width=".8"/><line x1="18" y1="47" x2="18" y2="52" stroke="rgba(201,168,76,.3)" stroke-width=".8"/><line x1="22" y1="47" x2="23" y2="52" stroke="rgba(201,168,76,.3)" stroke-width=".8"/></svg>
+    </div>
+    <div class="lw"><div class="ls" style="height:42px"></div>
+      <svg class="lsvg" viewBox="0 0 36 52"><rect x="11" y="0" width="14" height="7" rx="2" fill="rgba(201,168,76,.55)"/><path d="M7 9Q5 29 7 43Q18 49 29 43Q31 29 29 9Z" fill="#3d1220"/><path d="M7 9Q5 29 7 43Q18 49 29 43Q31 29 29 9Z" fill="none" stroke="rgba(201,168,76,.28)" stroke-width=".8"/><line x1="7" y1="18" x2="29" y2="18" stroke="rgba(201,168,76,.18)" stroke-width=".7"/><line x1="6" y1="27" x2="30" y2="27" stroke="rgba(201,168,76,.18)" stroke-width=".7"/><line x1="7" y1="36" x2="29" y2="36" stroke="rgba(201,168,76,.18)" stroke-width=".7"/><ellipse cx="18" cy="43" rx="5" ry="4" fill="#2d0a14" stroke="rgba(201,168,76,.25)" stroke-width=".6"/><line x1="14" y1="47" x2="13" y2="52" stroke="rgba(201,168,76,.3)" stroke-width=".8"/><line x1="18" y1="47" x2="18" y2="52" stroke="rgba(201,168,76,.3)" stroke-width=".8"/><line x1="22" y1="47" x2="23" y2="52" stroke="rgba(201,168,76,.3)" stroke-width=".8"/></svg>
+    </div>
+    <div class="lw"><div class="ls" style="height:60px"></div>
+      <svg class="lsvg" viewBox="0 0 36 52"><rect x="11" y="0" width="14" height="7" rx="2" fill="rgba(201,168,76,.55)"/><path d="M7 9Q5 29 7 43Q18 49 29 43Q31 29 29 9Z" fill="#3d1220"/><path d="M7 9Q5 29 7 43Q18 49 29 43Q31 29 29 9Z" fill="none" stroke="rgba(201,168,76,.28)" stroke-width=".8"/><line x1="7" y1="18" x2="29" y2="18" stroke="rgba(201,168,76,.18)" stroke-width=".7"/><line x1="6" y1="27" x2="30" y2="27" stroke="rgba(201,168,76,.18)" stroke-width=".7"/><line x1="7" y1="36" x2="29" y2="36" stroke="rgba(201,168,76,.18)" stroke-width=".7"/><ellipse cx="18" cy="43" rx="5" ry="4" fill="#2d0a14" stroke="rgba(201,168,76,.25)" stroke-width=".6"/><line x1="14" y1="47" x2="13" y2="52" stroke="rgba(201,168,76,.3)" stroke-width=".8"/><line x1="18" y1="47" x2="18" y2="52" stroke="rgba(201,168,76,.3)" stroke-width=".8"/><line x1="22" y1="47" x2="23" y2="52" stroke="rgba(201,168,76,.3)" stroke-width=".8"/></svg>
+    </div>
+    <div class="lw"><div class="ls" style="height:36px"></div>
+      <svg class="lsvg" viewBox="0 0 36 52"><rect x="11" y="0" width="14" height="7" rx="2" fill="rgba(201,168,76,.55)"/><path d="M7 9Q5 29 7 43Q18 49 29 43Q31 29 29 9Z" fill="#3d1220"/><path d="M7 9Q5 29 7 43Q18 49 29 43Q31 29 29 9Z" fill="none" stroke="rgba(201,168,76,.28)" stroke-width=".8"/><line x1="7" y1="18" x2="29" y2="18" stroke="rgba(201,168,76,.18)" stroke-width=".7"/><line x1="6" y1="27" x2="30" y2="27" stroke="rgba(201,168,76,.18)" stroke-width=".7"/><line x1="7" y1="36" x2="29" y2="36" stroke="rgba(201,168,76,.18)" stroke-width=".7"/><ellipse cx="18" cy="43" rx="5" ry="4" fill="#2d0a14" stroke="rgba(201,168,76,.25)" stroke-width=".6"/><line x1="14" y1="47" x2="13" y2="52" stroke="rgba(201,168,76,.3)" stroke-width=".8"/><line x1="18" y1="47" x2="18" y2="52" stroke="rgba(201,168,76,.3)" stroke-width=".8"/><line x1="22" y1="47" x2="23" y2="52" stroke="rgba(201,168,76,.3)" stroke-width=".8"/></svg>
+    </div>
+    <div class="lw"><div class="ls" style="height:56px"></div>
+      <svg class="lsvg" viewBox="0 0 36 52"><rect x="11" y="0" width="14" height="7" rx="2" fill="rgba(201,168,76,.55)"/><path d="M7 9Q5 29 7 43Q18 49 29 43Q31 29 29 9Z" fill="#3d1220"/><path d="M7 9Q5 29 7 43Q18 49 29 43Q31 29 29 9Z" fill="none" stroke="rgba(201,168,76,.28)" stroke-width=".8"/><line x1="7" y1="18" x2="29" y2="18" stroke="rgba(201,168,76,.18)" stroke-width=".7"/><line x1="6" y1="27" x2="30" y2="27" stroke="rgba(201,168,76,.18)" stroke-width=".7"/><line x1="7" y1="36" x2="29" y2="36" stroke="rgba(201,168,76,.18)" stroke-width=".7"/><ellipse cx="18" cy="43" rx="5" ry="4" fill="#2d0a14" stroke="rgba(201,168,76,.25)" stroke-width=".6"/><line x1="14" y1="47" x2="13" y2="52" stroke="rgba(201,168,76,.3)" stroke-width=".8"/><line x1="18" y1="47" x2="18" y2="52" stroke="rgba(201,168,76,.3)" stroke-width=".8"/><line x1="22" y1="47" x2="23" y2="52" stroke="rgba(201,168,76,.3)" stroke-width=".8"/></svg>
+    </div>
+    <div class="lw"><div class="ls" style="height:46px"></div>
+      <svg class="lsvg" viewBox="0 0 36 52"><rect x="11" y="0" width="14" height="7" rx="2" fill="rgba(201,168,76,.55)"/><path d="M7 9Q5 29 7 43Q18 49 29 43Q31 29 29 9Z" fill="#3d1220"/><path d="M7 9Q5 29 7 43Q18 49 29 43Q31 29 29 9Z" fill="none" stroke="rgba(201,168,76,.28)" stroke-width=".8"/><line x1="7" y1="18" x2="29" y2="18" stroke="rgba(201,168,76,.18)" stroke-width=".7"/><line x1="6" y1="27" x2="30" y2="27" stroke="rgba(201,168,76,.18)" stroke-width=".7"/><line x1="7" y1="36" x2="29" y2="36" stroke="rgba(201,168,76,.18)" stroke-width=".7"/><ellipse cx="18" cy="43" rx="5" ry="4" fill="#2d0a14" stroke="rgba(201,168,76,.25)" stroke-width=".6"/><line x1="14" y1="47" x2="13" y2="52" stroke="rgba(201,168,76,.3)" stroke-width=".8"/><line x1="18" y1="47" x2="18" y2="52" stroke="rgba(201,168,76,.3)" stroke-width=".8"/><line x1="22" y1="47" x2="23" y2="52" stroke="rgba(201,168,76,.3)" stroke-width=".8"/></svg>
+    </div>
+  </div>
+
+  <section class="hero">
+    <div class="bismillah">بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ</div>
+    <div class="card">
+      <div class="co tl"></div><div class="co tr"></div>
+      <div class="co bl"></div><div class="co br"></div>
+      <p class="pre-text">يسعدنا أن ندعوكم لمشاركتنا فرحة زواجنا<br>
+        <span style="font-size:.88em;color:var(--gold-d)">Nous avons l'honneur de vous convier à célébrer notre union</span>
+      </p>
+      <span class="sep">✦ &nbsp; ✦ &nbsp; ✦</span>
+      <span class="names-ar">أنس</span>
+      <span class="and">&amp;</span>
+      <span class="names-ar">ملاك</span>
+      <div class="names-fr" style="margin-top:8px">Anas &amp; Malak</div>
+      <span class="sep" style="margin-top:20px">— &nbsp; — &nbsp; —</span>
+      <div class="date-note">يونيو ٢٠٢٦ &nbsp;·&nbsp; سلا، المغرب<br>Juin 2026 &nbsp;·&nbsp; Salé, Maroc</div>
+    </div>
+  </section>
+
+  <div class="cdw">
+    <div class="cdt">العد التنازلي &nbsp;·&nbsp; Comptes à rebours</div>
+    <div style="display:flex;gap:clamp(12px,3vw,24px);justify-content:center;flex-wrap:wrap;max-width:620px;margin:0 auto;">
+
+      <div style="flex:1;min-width:240px;max-width:280px;text-align:center;">
+        <div style="font-size:clamp(11px,2.5vw,13px);letter-spacing:2px;color:rgba(201,168,76,0.6);text-transform:uppercase;margin-bottom:10px;">
+          🕌 &nbsp;للرجال · Hommes<br>
+          <span style="font-size:11px;opacity:0.7">Vendredi 19 Juin · بعد العصر</span>
+        </div>
+        <div class="cdg">
+          <div class="cdb"><span class="cdn" id="h-d">--</span><span class="cdl">أيام · J</span></div>
+          <div class="cdb"><span class="cdn" id="h-h">--</span><span class="cdl">ساعات · H</span></div>
+          <div class="cdb"><span class="cdn" id="h-m">--</span><span class="cdl">دقائق · M</span></div>
+          <div class="cdb"><span class="cdn" id="h-s">--</span><span class="cdl">ثوان · S</span></div>
+        </div>
+      </div>
+
+      <div style="width:1px;background:rgba(201,168,76,0.15);align-self:stretch;flex-shrink:0;"></div>
+
+      <div style="flex:1;min-width:240px;max-width:280px;text-align:center;">
+        <div style="font-size:clamp(11px,2.5vw,13px);letter-spacing:2px;color:rgba(201,168,76,0.6);text-transform:uppercase;margin-bottom:10px;">
+          🌸 &nbsp;للنساء · Femmes<br>
+          <span style="font-size:11px;opacity:0.7">Samedi 20 Juin · بعد العصر</span>
+        </div>
+        <div class="cdg">
+          <div class="cdb"><span class="cdn" id="f-d">--</span><span class="cdl">أيام · J</span></div>
+          <div class="cdb"><span class="cdn" id="f-h">--</span><span class="cdl">ساعات · H</span></div>
+          <div class="cdb"><span class="cdn" id="f-m">--</span><span class="cdl">دقائق · M</span></div>
+          <div class="cdb"><span class="cdn" id="f-s">--</span><span class="cdl">ثوان · S</span></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <section class="sec">
+    <div class="stit fade">Programme</div>
+    <div class="evg">
+      <div class="evc fade">
+        <span class="eico">🕌</span>
+        <div class="ewho">للرجال &nbsp;·&nbsp; Hommes</div>
+        <span class="edn" style="font-size:42px;padding-top:8px;display:block">Vendredi</span>
+        <div class="emo">19 Juin &nbsp;·&nbsp; ١٩ يونيو</div>
+        <div class="epr">بعد صلاة العصر<br><span>Après la prière d'Asr</span></div>
+      </div>
+      <div class="evc fade" style="animation-delay:.15s">
+        <span class="eico">🌸</span>
+        <div class="ewho">للنساء &nbsp;·&nbsp; Femmes</div>
+        <span class="edn" style="font-size:42px;padding-top:8px;display:block">Samedi</span>
+        <div class="emo">20 Juin &nbsp;·&nbsp; ٢٠ يونيو</div>
+        <div class="epr">الساعة 16:00<br><span>À partir de 16h00</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" style="padding-top:0">
+    <div class="stit fade">Lieu</div>
+    <div class="locc fade">
+      
+      
+      <a href="https://maps.app.goo.gl/NTSBTKpEKK6xMs6r8" target="_blank" class="mapb">✦ &nbsp; Ouvrir sur Maps &nbsp;·&nbsp; افتح الخريطة &nbsp; ✦</a>
+    </div>
+  </section>
+
+  <footer class="foot">
+    <div class="fdua">رَبَّنَا هَبْ لَنَا مِنْ أَزْوَاجِنَا وَذُرِّيَّاتِنَا قُرَّةَ أَعْيُنٍ</div>
+    <div class="ffr">Que Dieu bénisse notre union</div>
+    <div class="fsig">Anas &amp; Malak &nbsp;·&nbsp; Juin 2026</div>
+  </footer>
+
+</div>
+
+<script>
+function openEnv(){
+  const env=document.getElementById('env');
+  const p1=document.getElementById('page1');
+  const p2=document.getElementById('page2');
+  env.classList.add('open');
+  setTimeout(()=>{
+    p1.style.transition='opacity .7s ease';
+    p1.style.opacity='0';
+    p1.style.pointerEvents='none';
+  },950);
+  setTimeout(()=>{
+    p1.style.display='none';
+    document.body.style.overflow='auto';
+    document.documentElement.style.overflow='auto';
+    p2.classList.add('visible');
+    startCd();observeFades();
+  },1650);
+}
+function startCd(){
+  const tH=new Date(2026,5,19,17,0,0); // Vendredi 19 Juin après Asr
+  const tF=new Date(2026,5,20,17,0,0); // Samedi 20 Juin après Asr
+  function fill(d,pfx){
+    if(d<=0){['d','h','m','s'].forEach(i=>document.getElementById(pfx+i).textContent='00');return;}
+    document.getElementById(pfx+'d').textContent=String(Math.floor(d/86400000)).padStart(2,'0');
+    document.getElementById(pfx+'h').textContent=String(Math.floor(d%86400000/3600000)).padStart(2,'0');
+    document.getElementById(pfx+'m').textContent=String(Math.floor(d%3600000/60000)).padStart(2,'0');
+    document.getElementById(pfx+'s').textContent=String(Math.floor(d%60000/1000)).padStart(2,'0');
+  }
+  function tick(){
+    const now=new Date();
+    fill(tH-now,'h-');
+    fill(tF-now,'f-');
+  }
+  tick();setInterval(tick,1000);
+}
+function observeFades(){
+  const obs=new IntersectionObserver(entries=>{
+    entries.forEach(e=>{if(e.isIntersecting){e.target.style.animation='aUp .9s ease forwards';obs.unobserve(e.target);}});
+  },{threshold:.1});
+  document.querySelectorAll('.fade').forEach(el=>obs.observe(el));
+}
+</script>
+</body>
+</html>
